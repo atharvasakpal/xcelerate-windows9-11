@@ -83,6 +83,7 @@ app.post('/pairdevice',(req,res)=>{
     })
     
 
+
 app.get('/connectDevice',(req,res)=>{
     res.render('connectDevice');
 })    
