@@ -17,13 +17,13 @@ app.get('/',(req,res)=>{
 })
 
 
-
+//show connected devices
 app.get('/connecteddevices',(req,res)=>{
     res.render('connecteddevices.ejs');
 })
 
 
-//connected devices 
+
 app.post('/connecteddevices',(req,res)=>{
     // res.send('post request successful!') 
     exec(`adb devices`,(error,stdout,stderr)=>{
@@ -38,14 +38,25 @@ app.post('/connecteddevices',(req,res)=>{
       }
     
       //showing the devices
-      const devices = stdout.split('\n').slice(1).filter(line => line.trim() !== '').map(line => {
+      const devices= stdout.split('\n').slice(1).filter(line => line.trim() !== '').map(line => {
         const [device, state] = line.trim().split('\t');
         return { device, state };
       });
-
-      res.send(devices);
+      //get the list of deviceNames
+      // let deviceName = [];
+      // for (i of devices){
+      //   // deviceName.push(exec(`adb -s ${i['device']} shell getprop ro.product.marketname`));
+      //   deviceName.push(i['device']);
+      // }
+      // res.send(deviceName);
+      // res.send(devices);
+       res.render('connecteddevices',{devices});
     }) 
 });
+
+
+
+
 
 
 app.get('/pairdevice',(req,res)=>{
@@ -96,6 +107,16 @@ app.post('/connectDevice',(req,res)=>{
     // .then(res.send('paired successfully!'))
     // .catch(err=>{console.log(err)})
 });
+
+
+
+//scrcpy
+app.get('/scrcpy',(req,res)=>{
+  res.send('get request scrcpy');
+})
+app.post('/scrcpy',(req,res)=>{
+    res.send('post request scrcpy');
+})
 
 
 

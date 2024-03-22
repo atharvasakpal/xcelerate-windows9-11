@@ -6,9 +6,17 @@
     <title>conencted devices</title>
 </head>
 <body>
+    <form action="/scrcpy" method="post" id ='scrcpy'></form>
     <center>
         <h1>Connected Devices</h1>
-        
+        <%for( let i of devices ){ %>
+            <ul>
+                <li><%= i['device'] %> (<%= i['state'] %>)
+                    <a onclick="document.getElementById('scrcpy').submit();return false;" style="color: blue;">remote</a>
+                    
+                </li>
+            </ul>
+        <%}%>
     </center>
     <a href="/">home page</a>
 </body>
