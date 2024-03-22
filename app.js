@@ -75,7 +75,7 @@ app.get('/connectDevice',(req,res)=>{
     res.render('connectDevice');
 })    
 app.post('/connectDevice',(req,res)=>{
-   
+   const {port} = req.body; 
   exec(`adb connect ${ipaddress}:${port}`,(error, stdout,stderr)=>{
       if (error) {
         console.error(`Error: ${error.message}`);
