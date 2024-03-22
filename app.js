@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const {exec} = require('child_process');
 const childCommand = require('child-command');
 const app = express();
+const webSocket = require('ws');
 
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: true }))
