@@ -131,6 +131,67 @@ app.post('/scrcpy',(req,res)=>{
 })
 
 
+//screen mirror
+app.get('/screenmirror',(req,res)=>{
+
+  exec(`adb devices`,(error,stdout,stderr)=>{
+    //error handling
+    if (error) {
+      console.error(`Error: ${error.message}`);
+      return res.status(500).send('Error occurred');
+    }
+    if (stderr) {
+      console.error(`ADB Error: ${stderr}`);
+      return res.status(500).send('ADB Error occurred');
+    }
+  
+    //showing the devices
+    const devices= stdout.split('\n').slice(1).filter(line => line.trim() !== '').map(line => {
+      const [device, state] = line.trim().split('\t');
+      return { device, state };
+    });
+    //get the list of deviceNames
+    // let deviceName = [];
+    // for (i of devices){
+    //   // deviceName.push(exec(`adb -s ${i['device']} shell getprop ro.product.marketname`));
+    //   deviceName.push(i['device']);
+    // }
+    // res.send(deviceName);
+    // res.send(devices);
+     res.render('screenmirror',{devices});
+  }) 
+
+app.post('/screenmirror',(req,res)=>{
+  
+  // res.send('post request of screen mirror')
+  const mirrorDevice = req.body.deviceSelect;
+  
+  //scrcpy code
+
+  exec(`scrcpy -s ${mirrorDevice}`,(error, stdout, stderr)=>{
+    if(error){
+      res.send(`Error: ${error.message}`);
+    }
+    if (stderr) {
+      res.send(`scrcpy Error: ${stderr}`);
+    }
+
+    //output
+    console.log(stdout);
+  })
+
+  // console.log(mirrorDevice);
+  res.send(`mirroring ${mirrorDevice}`);
+})
+
+
+})
+
+
+
+
+
+
 
 app.listen(3000,()=>{
     console.log('listening on port 3000');
