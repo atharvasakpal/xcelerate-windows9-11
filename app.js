@@ -112,24 +112,24 @@ app.post('/connectDevice',(req,res)=>{
 
 
 
-//scrcpy
-app.get('/scrcpy',(req,res)=>{
-  res.send('get request scrcpy');
-})
-app.post('/scrcpy',(req,res)=>{
-    // res.send(req.body);
-    exec('scrcpy -s 192.168.0.247:37525',(error, stdout, stderr)=>{
-      if(error){
-        res.send(`Error: ${error.message}`);
-      }
-      if (stderr) {
-        res.send(`scrcpy Error: ${stderr}`);
-      }
+// //scrcpy
+// app.get('/scrcpy',(req,res)=>{
+//   res.send('get request scrcpy');
+// })
+// app.post('/scrcpy',(req,res)=>{
+//     // res.send(req.body);
+//     exec('scrcpy -s 192.168.0.247:37525',(error, stdout, stderr)=>{
+//       if(error){
+//         res.send(`Error: ${error.message}`);
+//       }
+//       if (stderr) {
+//         res.send(`scrcpy Error: ${stderr}`);
+//       }
 
-      //output
-      console.log(stdout);
-    })
-})
+//       //output
+//       console.log(stdout);
+//     })
+// })
 
 
 //screen mirror
@@ -165,7 +165,7 @@ app.get('/screenmirror',(req,res)=>{
 app.post('/screenmirror',(req,res)=>{
   
   // res.send('post request of screen mirror')
-  const mirrorDevice = req.body.deviceSelect;
+   const mirrorDevice = req.body.deviceSelect;
   
   //scrcpy code
 
@@ -182,15 +182,92 @@ app.post('/screenmirror',(req,res)=>{
   })
 
   // console.log(mirrorDevice);
-  res.send(`mirroring ${mirrorDevice}`);
+  
+})
+});
+
+
+// device Details
+
+app.get('/deviceDetails',(req,res)=>{
+
+  exec(`adb devices`,(error,stdout,stderr)=>{
+    //error handling
+    if (error) {
+      console.error(`Error: ${error.message}`);
+      return res.status(500).send('Error occurred');
+    }
+    if (stderr) {
+      console.error(`ADB Error: ${stderr}`);
+      return res.status(500).send('ADB Error occurred');
+    }
+  
+    //showing the devices
+    const devices= stdout.split('\n').slice(1).filter(line => line.trim() !== '').map(line => {
+      const [device, state] = line.trim().split('\t');
+      return { device, state };
+    });
+    //get the list of deviceNames
+    // let deviceName = [];
+    // for (i of devices){
+    //   // deviceName.push(exec(`adb -s ${i['device']} shell getprop ro.product.marketname`));
+    //   deviceName.push(i['device']);
+    // }
+    // res.send(deviceName);
+    // res.send(devices);
+     res.render('deviceDetails',{devices});
+  }) 
 })
 
-
-})
-
+app.post('')
 
 
 
+app.post('/deviceDetails',(req,res)=>{
+  
+   
+   const detailsDevice = req.body.deviceDetails;
+  
+   //battery percentage
+  //  function getBatteryPercentage() {
+  //   return new Promise((resolve, reject) => {
+  //     exec(`adb -s ${detailsDevice} shell dumpsys battery`, (error, stdout, stderr) => {
+  //       if (error) {
+  //         reject(error);
+  //         return;
+  //       }
+        
+  //       // Parse the battery percentage from the output
+  //       const batteryInfo = stdout.split('\n').find(line => line.includes('level'));
+  //       if (batteryInfo) {
+  //         const batteryPercentage = batteryInfo.match(/\d+/)[0];
+  //         resolve(parseInt(batteryPercentage));
+  //       } else {
+  //         reject(new Error('Failed to retrieve battery percentage'));
+  //       }
+  //     });
+  //   });
+  // }
+  
+  // // Example usage
+  // getBatteryPercentage()
+  //   .then(percentage => console.log('Battery Percentage:', percentage))
+  //   .catch(error => console.error('Error:', error.message));
+  exec(`adb -s ${detailsDevice} shell dumpsys battery`, (error, stdout, stderr) => {
+    if (error) {
+      res.status(500).send(`Error: ${error.message}`);
+      return;
+    }
+    
+    const batteryInfo = stdout.split('\n').find(line => line.includes('level'));
+    
+      const batteryPercentage = batteryInfo.match(/\d+/)[0];
+      // res.send(`Battery Percentage: ${batteryPercentage}%`);
+      console.log(batteryPercentage);
+    
+  });
+  res.render('showDeviceDetails',{batteryPercentage});
+});
 
 
 

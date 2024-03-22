@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>deviceDetails</title>
+</head>
+<body>
+    
+    <center><h1>Device Details</h1></center>
+    
+    <center>
+        <form action="deviceDetails" method="post">
+    <select name="deviceDetails" id="deviceDetails">
+        <%for( let i of devices ){ %>
+            <option value="<%= i['device'] %>"> <%= i['device'] %></option> 
+        <%}%>
+    
+    </select>
+    <input type="submit" name="submit" id="submit" value="Get Details">
+    
+    </form>
+    </center>
+    
+    <a href="/">home page</a>
+</body>
+</html>
