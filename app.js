@@ -115,7 +115,18 @@ app.get('/scrcpy',(req,res)=>{
   res.send('get request scrcpy');
 })
 app.post('/scrcpy',(req,res)=>{
-    res.send('post request scrcpy');
+    // res.send(req.body);
+    exec('scrcpy -s 192.168.0.247:37525',(error, stdout, stderr)=>{
+      if(error){
+        res.send(`Error: ${error.message}`);
+      }
+      if (stderr) {
+        res.send(`scrcpy Error: ${stderr}`);
+      }
+
+      //output
+      console.log(stdout);
+    })
 })
 
 
