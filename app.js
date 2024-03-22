@@ -209,7 +209,7 @@ exec(`adb connect ${ipaddress}:${port}`,(error, stdout,stderr)=>{
       return res.status(500).send('ADB Error occurred during pairing');
     }
     console.log(`Connection successful: ${stdout}`);
-    res.send(`Pairing & Connection successful <a href='/'>home</a>`);
+    res.send(`Pairing & Connection successful <a href='/homepage'>home</a>`);
   })
 })
 
@@ -228,7 +228,7 @@ res.send('get request scrcpy');
 })
 app.post('/scrcpy',(req,res)=>{
   // res.send(req.body);
-  exec('scrcpy -s 192.168.0.194:35543',(error, stdout, stderr)=>{
+  exec('scrcpy -s 192.168.0.175:40891',(error, stdout, stderr)=>{
     if(error){
       res.send(`Error: ${error.message}`);
     }

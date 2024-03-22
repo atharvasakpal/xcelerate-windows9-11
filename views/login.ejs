@@ -5,24 +5,101 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <style>
-    /* Add your styling for the form and buttons here */
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    .login-form {
+      background-color: #fff;
+      padding: 50px;
+      border-radius: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-form h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .login-form label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .login-form input[type="text"],
+    .login-form input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      margin-bottom: 15px;
+    }
+
+    .login-form button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .login-form .error-message {
+      color: red;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
-  <% if (!locals.user) { %> <h1>Login</h1>
-  <form action="/login" method="post">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required><br>
+  <% if (!locals.user) { %>
+  <div class="login-form">
+    <h1>Login</h1>
+    <p id="error-message" class="error-message"></p>
+    <form action="/login" method="post">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required><br>
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required><br>
 
-    <button type="submit">Login</button>
-  </form>
-  <p>Don't have an account? <a href="/register">Register</a></p>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="/register">Register</a></p>
+  </div>
   <% } else { %>
     <p>You are already logged in!</p>
     <%- include('./partials/logout.ejs') %>
   <% } %>
+
+  <script>
+    const errorMessage = document.getElementById('error-message');
+
+// Clear any previous error messages
+errorMessage.textContent = '';
+
+// Assuming your server responds with an error message in the response body on failed login
+fetch('/login', {
+  method: 'POST',
+  // ... form data
+})
+.then(response => response.json()) // Parse JSON response (assuming your server sends JSON)
+.then(data => {
+  if (data.error) {
+    errorMessage.textContent = data.error; // Set error message from server response
+  } else {
+    // Handle successful login (redirect, etc.)
+  }
+})
+.catch(error => {
+  console.error('Error:', error);
+  // Handle other errors (e.g., network issues)
+});
+
+  </script>
 </body>
 </html>
