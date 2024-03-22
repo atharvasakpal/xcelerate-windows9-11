@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
@@ -6,12 +7,67 @@ const bcrypt = require('bcrypt');
 const passport = require('passport');
 const {exec} = require('child_process');
 const LocalStrategy = require('passport-local').Strategy;
+const crypto = require('crypto');
+const adb = require('adbkit');
+
+const client = adb.createClient();
+const disconnectDevices = (req, res, next) => {
+  // Execute ADB command to disconnect devices
+  exec('adb disconnect', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error: ${error.message}`);
+      return res.status(500).send('Error occurred');
+    }
+    if (stderr) {
+      console.error(`ADB Error: ${stderr}`);
+      return res.status(500).send('ADB Error occurred');
+    }
+    console.log('Disconnected ADB devices');
+    next();
+  });
+};
+
 
 const UserModel = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const secretKey = crypto.randomBytes(32).toString('hex');
+
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    req.userId = decoded.userId;
+    next();
+  });
+};
+
+// API endpoint to fetch account data
+app.get('/account', verifyToken, async (req, res) => {
+  try {
+    // Fetch account data from MongoDB using user ID
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Send the user account data as JSON response
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching account data:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+module.exports = { verifyToken };
 // Connect to MongoDB
 mongoose.connect('mongodb+srv://keyur:IAMjamesbond007!@cluster0.0yd6eom.mongodb.net/', {
   useNewUrlParser: true,
@@ -95,7 +151,7 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
-app.post('/login', passport.authenticate('local', { successRedirect: '/homepage', failureRedirect: '/login', failureFlash: true }));
+app.post('/login',disconnectDevices, passport.authenticate('local', { successRedirect: '/homepage', failureRedirect: '/login', failureFlash: true }));
 
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
@@ -116,9 +172,37 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// Logout route
 app.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/login');
+  // Execute adb disconnect command to disconnect all adb devices
+  exec('adb disconnect', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error: ${error.message}`);
+      return res.status(500).send('Error occurred during adb disconnect');
+    }
+    if (stderr) {
+      console.error(`ADB Error: ${stderr}`);
+      return res.status(500).send('ADB Error occurred during adb disconnect');
+    }
+    console.log(`ADB Disconnect successful: ${stdout}`);
+    
+    // Perform logout operations (e.g., clearing session)
+    req.logout();
+    res.redirect('/login');
+  });
+});
+// Logout route
+// Logout route
+app.post('/logout', disconnectDevices, (req, res, next) => {
+  // Assuming you are using Express session
+  req.session.destroy((err) => {
+    if (err) {
+      // If there's an error during logout, pass it to the next middleware
+      return next(err);
+    }
+    // Redirect the user to the login page after logout
+    res.redirect('/login');
+  });
 });
 
 app.get('/homepage', (req, res) => {
@@ -228,7 +312,7 @@ res.send('get request scrcpy');
 })
 app.post('/scrcpy',(req,res)=>{
   // res.send(req.body);
-  exec('scrcpy -s 192.168.0.175:40891',(error, stdout, stderr)=>{
+  exec('scrcpy -s 192.168.0.169:40953',(error, stdout, stderr)=>{
     if(error){
       res.send(`Error: ${error.message}`);
     }
